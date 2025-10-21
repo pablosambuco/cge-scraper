@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Private config
+config.toml
+scraper.log
+fecha*.txt

@@ -8,4 +8,6 @@ dependencies = [
     "argparse>=1.4.0",
     "bs4>=0.0.2",
     "requests>=2.32.5",
+    "toml>=0.10.2",
+    "tomlkit>=0.13.3",
 ]
