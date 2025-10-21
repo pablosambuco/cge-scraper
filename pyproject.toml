@@ -1,0 +1,11 @@
+[project]
+name = "cge-scraper"
+version = "0.1.0"
+description = "Scraper para fechas del Consulado General de España en Argentina"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "argparse>=1.4.0",
+    "bs4>=0.0.2",
+    "requests>=2.32.5",
+]
