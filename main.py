@@ -15,7 +15,6 @@ import tomlkit
 # config cache
 _CONFIG = None
 
-
 def read_config(path: str):
     """Read TOML config file. Use tomllib if available (Py3.11+), otherwise fall
     back to the third-party 'toml' package. Returns a dict.
@@ -23,14 +22,17 @@ def read_config(path: str):
     with open(path, "rb") as f:
         return tomllib.load(f)
 
-
-def get_config():
+def get_config(path: str | None = None):
 
     global _CONFIG
-    if _CONFIG is not None:
+    if _CONFIG is not None and path is None:
         return _CONFIG
 
-    cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.toml")
+    cfg_path = (
+        path
+        if path
+        else os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.toml")
+    )
     if not os.path.exists(cfg_path):
         template = {
             "api": {"key": "", "base_url": ""},
@@ -44,7 +46,8 @@ def get_config():
         sys.exit(1)
 
     cfg = read_config(cfg_path)
-    _CONFIG = cfg
+    if path is None:
+        _CONFIG = cfg
     return cfg
 
 def tprint(string):
@@ -86,7 +89,6 @@ def send_message(mensaje):
     )
     _requests.post(f"{base}/sessions/default/stop", headers=headers, timeout=1000)
 
-
 def sanitize_param(p: str) -> str:
     if not p:
         return ""
@@ -99,9 +101,8 @@ def sanitize_param(p: str) -> str:
     cleaned = re.sub(r"[^a-z0-9]", "", lower)
     return cleaned
 
-
 def main(params: argparse.Namespace) -> None:
-    cfg = get_config()
+    cfg = get_config(getattr(params, "config", None))
     url = cfg["web"]["url"]
     search_text = params.text
 
@@ -164,7 +165,6 @@ def main(params: argparse.Namespace) -> None:
     message = f"Hay una nueva fecha: {fecha}, entrá acá: {link}"
     send_message(message)
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Scrapea la página de citas y notifica cuando cambia la fecha para una fila dada."
@@ -173,7 +173,14 @@ if __name__ == "__main__":
         "--text",
         "-t",
         dest="text",
+        required=True,
         help='Texto a buscar en la primera columna de la tabla (por ej: "Registro de Matrícula Consular-Altas").',
+    )
+    parser.add_argument(
+        "--config",
+        "-c",
+        dest="config",
+        help="Ruta al archivo config.toml. Si no se especifica, se usa el del directorio del script.",
     )
     args = parser.parse_args()
     main(args)

@@ -18,9 +18,3 @@ spec.loader.exec_module(module)
 
 # Re-export commonly used symbols for tests
 sanitize_param = getattr(module, "sanitize_param")
-main = getattr(module, "main")
-send_message = getattr(module, "send_message")
-URL = getattr(module, "URL")
-
-# Keep a reference to the loaded module for deeper monkeypatching
-_loaded_module = module
