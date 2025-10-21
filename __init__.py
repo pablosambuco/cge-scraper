@@ -18,3 +18,10 @@ spec.loader.exec_module(module)
 
 # Re-export commonly used symbols for tests
 sanitize_param = getattr(module, "sanitize_param")
+send_message = getattr(module, "send_message")
+send_message = getattr(module, "read_config")
+send_message = getattr(module, "get_config")
+send_message = getattr(module, "tprint")
+main = getattr(module, "main")
+URL = getattr(module, "_CONFIG")
+
