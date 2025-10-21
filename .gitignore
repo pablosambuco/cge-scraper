@@ -13,3 +13,4 @@ wheels/
 config.toml
 scraper.log
 fecha*.txt
+expressions.txt
