@@ -15,6 +15,7 @@ import tomlkit
 # config cache
 _CONFIG = None
 
+
 def read_config(path: str):
     """Read TOML config file. Use tomllib if available (Py3.11+), otherwise fall
     back to the third-party 'toml' package. Returns a dict.
@@ -22,8 +23,8 @@ def read_config(path: str):
     with open(path, "rb") as f:
         return tomllib.load(f)
 
-def get_config(path: str | None = None):
 
+def get_config(path: str | None = None):
     global _CONFIG
     if _CONFIG is not None and path is None:
         return _CONFIG
@@ -35,14 +36,15 @@ def get_config(path: str | None = None):
     )
     if not os.path.exists(cfg_path):
         template = {
-            "api": {"key": "", "base_url": ""},
-            "chat": {"chat_id": ""},
-            "web": {"url": ""}
+            "web": {"url": ""},
+            "telegram": {"base_url": "", "token": "", "chat_id": ""},
         }
         with open(cfg_path, "w", encoding="utf-8") as f:
             f.write(tomlkit.dumps(template))
         print(f"Se creó un archivo de configuración de ejemplo en: {cfg_path}")
-        print("Por favor edítalo y añade tu API key y chat_id, luego vuelve a ejecutar el programa.")
+        print(
+            "Por favor edítalo y añade tu API key y chat_id, luego vuelve a ejecutar el programa."
+        )
         sys.exit(1)
 
     cfg = read_config(cfg_path)
@@ -50,15 +52,17 @@ def get_config(path: str | None = None):
         _CONFIG = cfg
     return cfg
 
+
 def tprint(string):
     """Takes a string and prints it with a timestamp prefix."""
     print("[{}] {}".format(time.strftime("%Y-%m-%d %H:%M:%S"), string))
 
+
 def send_message(mensaje):
     cfg = get_config()
-    base = cfg["api"]["base_url"].rstrip("/")
-    key = cfg["api"]["key"]
-    chat_id = cfg["chat"]["chat_id"]
+    base_url = cfg["telegram"]["base_url"]
+    token = cfg["telegram"]["token"]
+    chat_id = cfg["telegram"]["chat_id"]
 
     _requests = (
         requests
@@ -70,24 +74,17 @@ def send_message(mensaje):
         "accept": "application/json",
         "Content-Type": "application/json",
     }
-    if key:
-        headers["X-Api-Key"] = key
 
-    _requests.post(f"{base}/sessions/default/start", headers=headers, timeout=1000)
     _requests.post(
-        f"{base}/sendText",
+        f"{base_url}/bot{token}/sendMessage",
         headers=headers,
         json={
-            "chatId": chat_id,
-            "reply_to": None,
+            "chat_id": chat_id,
             "text": mensaje,
-            "linkPreview": True,
-            "linkPreviewHighQuality": True,
-            "session": "default",
         },
         timeout=1000,
     )
-    _requests.post(f"{base}/sessions/default/stop", headers=headers, timeout=1000)
+
 
 def sanitize_param(p: str) -> str:
     if not p:
@@ -100,6 +97,7 @@ def sanitize_param(p: str) -> str:
     # keep only alphanumeric characters
     cleaned = re.sub(r"[^a-z0-9]", "", lower)
     return cleaned
+
 
 def main(params: argparse.Namespace) -> None:
     cfg = get_config(getattr(params, "config", None))
@@ -164,6 +162,7 @@ def main(params: argparse.Namespace) -> None:
 
     message = f"Hay una nueva fecha: {fecha}, entrá acá: {link}"
     send_message(message)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
